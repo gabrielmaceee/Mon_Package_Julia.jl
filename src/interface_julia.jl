@@ -1,87 +1,20 @@
-"""import ./mes_fonctions
-print(pwd())
-println(f("X"))
-
-println(predire_val_arbre("PEUGEOT","206+","COMPACT",1.1,4,"jsp","X",9,6,8))
-
-
-"""
-#http://localhost:8050/
-
 using MLJ
 using JLD2
 using DataFrames, PlotlyJS, CSV, RDatasets
 
-df = CSV.read("D:/Master/S7/R-Julia/Projet/CO2 Emissions_Canada.csv", DataFrames.DataFrame)
+SVC = MLJ.@load SVC pkg=LIBSVM
+KNNClassifier = MLJ.@load KNNClassifier
+MyDecisionTree = MLJ.@load DecisionTreeClassifier pkg = DecisionTree
+MyDecisionTree2 = MLJ.@load DecisionTreeRegressor pkg = DecisionTree
+
+
+
+df = CSV.read("D:/Master/S7/R-Julia/Projet/Mon_Package_Julia/src/CO2 Emissions_Canada.csv", DataFrames.DataFrame)
 rename!(df, :"CO2 Emissions(g/km)"=> "CO2")
 rename!(df, :"Fuel Consumption Comb (L/100 km)"=>"Comb")
 rename!(df, :"Fuel Type"=>"Fuel")
 p1 = Plot(df, x=:Comb, y=:CO2, mode="markers", marker_size=8, text=:Make, group=:Fuel)
 #p1 = PlotlyJS.scatter(df, x=:Comb, y=:CO2, mode="markers", marker_size=8, text=:Make, group=:Fuel)
-c_r = load_object("D:/Master/S7/R-Julia/Projet/centrer_reduire.jld2")
-SVC = MLJ.@load SVC pkg=LIBSVM
-svc= load_object("D:/Master/S7/R-Julia/Projet/svm_classif.jld2")
-KNNClassifier = MLJ.@load KNNClassifier
-knn = JLD2.load_object("D:/Master/S7/R-Julia/Projet/knn_classif.jld2")
-MyDecisionTree = MLJ.@load DecisionTreeClassifier pkg = DecisionTree
-arbre_class = load_object("D:/Master/S7/R-Julia/Projet/arbre_classif.jld2")
-MyDecisionTree2 = MLJ.@load DecisionTreeRegressor pkg = DecisionTree
-arbre_predict = load_object("D:/Master/S7/R-Julia/Projet/arbre_predict.jdl2")
-function f(x)
-    if x == "E" return 0
-    end
-    return 1
-end
-
-function predire_knn(Marque, Modele, Class, Taille_moteur, Cylindres, Transmission,Fuel ,City,Hwy,Comb)
-    c_r = load_object("D:/Master/S7/R-Julia/Projet/centrer_reduire.jld2")
-    KNNClassifier = MLJ.@load KNNClassifier
-    knn = JLD2.load_object("D:/Master/S7/R-Julia/Projet/knn_classif.jld2")
-    fuel =  f(Fuel)  
-    donnees = DataFrame(Engine=Taille_moteur, Cylinders = Cylindres,City=City, Hwy=Hwy, Comb=Comb )
-    donnees = MLJ.transform(c_r, donnees)
-    x1 = DataFrame(fuel=fuel)
-    donnees=hcat(x1, donnees)
-    s = string.(predict_mode(knn, donnees))
-    s = s[1]
-    return "L'intevalle est " * s[4:length(s)-1] * "] g/100km"
-    
-end
-
-function predire_svm(Marque, Modele, Class, Taille_moteur, Cylindres, Transmission,Fuel ,City,Hwy,Comb)
-    fuel =  f(Fuel)  
-    donnees = DataFrame(Engine=Taille_moteur, Cylinders = Cylindres,City=City, Hwy=Hwy, Comb=Comb )
-    donnees = MLJ.transform(c_r, donnees)
-    x1 = DataFrame(fuel=fuel)
-    donnees=hcat(x1, donnees)
-    s = MLJ.predict(svc, donnees)
-    s = string.(MLJ.predict(svc, donnees))
-    s = s[1]
-    return "L'intevalle est " * s[4:length(s)-1] * "] g/100km" 
-end
-
-function predire_arbre_int(Marque, Modele, Class, Taille_moteur, Cylindres, Transmission,Fuel ,City,Hwy,Comb)
-    mpg = Comb *235.214583
-    MyDecisionTree = MLJ.@load DecisionTreeClassifier pkg = DecisionTree
-    arbre_class = load_object("D:/Master/S7/R-Julia/Projet/arbre_classif.jld2")
-    donnees = DataFrame(Make=Marque, Model=Modele, Class=Class, Engine=Taille_moteur, Cylinders=Cylindres, Transmission=Transmission,Fuel=Fuel,City=City, Hwy=Hwy, Comb=Comb, mpg=mpg )
-    s = string.(MLJ.predict_mode(arbre_class, donnees))
-    s = s[1]
-        return "L'intevalle est " * s[4:length(s)-1] * "] g/100km"
-    
-end
-
-function predire_val_arbre(Marque, Modele, Class, Taille_moteur, Cylindres, Transmission,Fuel ,City,Hwy,Comb)
-    mpg = Comb *235.214583
-    MyDecisionTree2 = MLJ.@load DecisionTreeRegressor pkg = DecisionTree
-    arbre_predict = load_object("D:/Master/S7/R-Julia/Projet/arbre_predict.jdl2")
-    fuel =  f(Fuel)  
-    donnees = DataFrame(Make=Marque, Model=Modele, Class=Class, Engine=Taille_moteur, Cylinders=Cylindres, Transmission=Transmission,Fuel=Fuel,City=City, Hwy=Hwy, Comb=Comb, mpg=mpg )
-    x1 = DataFrame(fuel=fuel)
-    donnees=hcat(x1, donnees)
-    return MLJ.predict_mode(arbre_predict, donnees)[1]   
-end
-
 
 using Dash
 
@@ -129,18 +62,19 @@ end
     end
     if Make == "" || Make == nothing || Model == "" || Model == nothing || Class == "" || Class == nothing || Transmission == "" || Transmission == nothing || Fuel == "" || Fuel == nothing
         return (
-        predire_knn(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
-        predire_svm(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
+            Mon_Package_Julia.predire_knn(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
+            Mon_Package_Julia.predire_svm(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
         "Non","Non")
     end
-    p = predire_val_arbre(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb))[1]
+    p = Mon_Package_Julia.predire_val_arbre(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb))[1]
     #scatter!([parse(Int64,Comb)],[trunc(Int32,p)], color="black", label = "nouveau", marker_size= 12)
     s = string.(p)
     return (
-    predire_knn(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
-    predire_svm(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
-    predire_arbre_int(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
+    Mon_Package_Julia.predire_knn(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
+    Mon_Package_Julia.predire_svm(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
+    Mon_Package_Julia.predire_arbre_int(Make, Model, Class, parse(Float64, Taille), parse(Float64, Cylinders), Transmission, Fuel, parse(Float64, City), parse(Float64,Hwy), parse(Float64, Comb)),
     "La prédiction est " * s * " g/100km")
 end
 
 run_server(app, "0.0.0.0", debug=true)
+#http://localhost:8050/

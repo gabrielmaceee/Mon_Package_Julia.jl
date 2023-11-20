@@ -1,5 +1,6 @@
 module Mon_Package_Julia
 
-# Write your package code here.
+export greet_your_package_name
+include("fonctions.jl")
 
 end
