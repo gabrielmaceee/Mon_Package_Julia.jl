@@ -9,7 +9,7 @@ MyDecisionTree2 = MLJ.@load DecisionTreeRegressor pkg = DecisionTree
 
 
 
-df = CSV.read("D:/Master/S7/R-Julia/Projet/Mon_Package_Julia/src/CO2 Emissions_Canada.csv", DataFrames.DataFrame)
+df = CSV.read(string(@__FILE__, "/../../Data/CO2 Emissions_Canada.csv"), DataFrames.DataFrame)
 rename!(df, :"CO2 Emissions(g/km)"=> "CO2")
 rename!(df, :"Fuel Consumption Comb (L/100 km)"=>"Comb")
 rename!(df, :"Fuel Type"=>"Fuel")
