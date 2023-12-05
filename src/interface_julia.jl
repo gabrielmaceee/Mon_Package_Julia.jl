@@ -1,8 +1,6 @@
 using MLJ
 using JLD2
 using DataFrames, PlotlyJS, CSV, RDatasets
-#import Pkg
-#Pkg.add("Mon_Package_Julia")
 using Mon_Package_Julia
 SVC = MLJ.@load SVC pkg=LIBSVM
 KNNClassifier = MLJ.@load KNNClassifier
